@@ -14,18 +14,42 @@ namespace RateMyApp
 		private const string LastLaunchDateKey = "RATE_MY_APP_LAST_LAUNCH_DATE";
 
 		// Members
-		private int firstCount;
-		private int secondCount;
+		private int firstCount;						// Number of app launches before showing the message
+		private int secondCount;					// Number of app launches before showing the message a second time
 		private int launchCount = 0;
 		private bool reviewed = false;
 		private DateTime? lastLaunchDate = null;
 		private string packageFamilyName;
 
 		// Properties
+		/// <summary>
+		/// The application name that will be displayed in the popup message.
+		/// A default value is provided by the library.
+		/// </summary>
 		public string ApplicationName { get; set; }
+
+		/// <summary>
+		/// Pop-up dialog title.
+		/// A default value is provided by the library.
+		/// </summary>
 		public string DialogTitle { get; set; }
+		
+		/// <summary>
+		/// Pop-up dialog content.
+		/// A default value is provided by the library.
+		/// </summary>
 		public string DialogMessage { get; set; }
+		
+		/// <summary>
+		/// Pop-up dialog OK button content.
+		/// A default value is provided by the library.
+		/// </summary>
 		public string DialogOkButtonContent { get; set; }
+
+		/// <summary>
+		/// Pop-up dialog cancel button content.
+		/// A default value is provided by the library.
+		/// </summary>
 		public string DialogCancelButtonContent { get; set; }
 
 		public FeedbackHelper(string packageFamilyName, int firstCount, int secondCount)
@@ -38,21 +62,45 @@ namespace RateMyApp
 			LoadDefaultResources();
 		}
 
+		/// <summary>
+		/// Provides access to the stored launch count for any use in the client app.
+		/// </summary>
+		public int LaunchCount
+		{ 
+			get { return launchCount; } 
+		}
+
+		public IAsyncAction Start()
+		{
+			return StartAsync().AsAsyncAction();
+		}
+
+		/// <summary>
+		/// Reset all counters used by the component (launch count, launch date, ...)
+		/// </summary>
+		public static void Reset()
+		{
+			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+			localSettings.Values[LaunchCountKey] = 0;
+			localSettings.Values[ReviewedKey] = false;
+			localSettings.Values.Remove(LastLaunchDateKey);
+		}
+
 		private void LoadStateFromStorage()
 		{
 			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-			
-			if(localSettings.Values.ContainsKey(LaunchCountKey))
+
+			if (localSettings.Values.ContainsKey(LaunchCountKey))
 			{
 				launchCount = (int)localSettings.Values[LaunchCountKey];
 			}
 
-			if(localSettings.Values.ContainsKey(ReviewedKey))
+			if (localSettings.Values.ContainsKey(ReviewedKey))
 			{
 				reviewed = (bool)localSettings.Values[ReviewedKey];
 			}
 
-			if(localSettings.Values.ContainsKey(LastLaunchDateKey))
+			if (localSettings.Values.ContainsKey(LastLaunchDateKey))
 			{
 				long ticks = (long)localSettings.Values[LastLaunchDateKey];
 				lastLaunchDate = new DateTime(ticks);
@@ -67,19 +115,6 @@ namespace RateMyApp
 			this.DialogMessage = rl.GetString("DialogMessage");
 			this.DialogOkButtonContent = rl.GetString("DialogOK");
 			this.DialogCancelButtonContent = rl.GetString("DialogCancel");
-		}
-
-		public IAsyncAction Start()
-		{
-			return StartAsync().AsAsyncAction();
-		}
-
-		public static void Reset()
-		{
-			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-			localSettings.Values[LaunchCountKey] = 0;
-			localSettings.Values[ReviewedKey] = false;
-			localSettings.Values.Remove(LastLaunchDateKey);
 		}
 
 		private async Task StartAsync()
