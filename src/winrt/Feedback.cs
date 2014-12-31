@@ -65,9 +65,17 @@ namespace RateMyApp
 		/// <summary>
 		/// Provides access to the stored launch count for any use in the client app.
 		/// </summary>
-		public int LaunchCount
-		{ 
-			get { return launchCount; } 
+		public static int LaunchCount
+		{
+			get
+			{
+				var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+				if (localSettings.Values.ContainsKey(LaunchCountKey))
+				{
+					return (int)localSettings.Values[LaunchCountKey];
+				}
+				return 0;
+			}
 		}
 
 		public IAsyncAction Start()
